@@ -1,0 +1,56 @@
+buildscript {
+    ext.kotlin_version = '1.3.50'
+    ext.kotlinx_html_version = '0.6.10'
+
+    repositories {
+        jcenter()
+        maven {
+            url "https://dl.bintray.com/kotlin/kotlin-eap"
+        }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.45"
+    }
+}
+// apply kotlin2js
+apply plugin: 'kotlin2js'
+// apply dead code elimination
+apply plugin: 'kotlin-dce-js'
+// apply plugin
+apply plugin: 'org.jetbrains.kotlin.frontend'
+
+repositories {
+    jcenter()
+}
+
+// configure kotlin compiler
+compileKotlin2Js {
+    kotlinOptions.metaInfo = true
+    kotlinOptions.outputFile = "$project.buildDir.path/js/${project.name}.js"
+    kotlinOptions.sourceMap = true
+    kotlinOptions.moduleKind = 'commonjs'
+    kotlinOptions.main = "call"
+}
+
+kotlinFrontend {
+    npm {
+        dependency "kotlin"
+        dependency "dayjs"
+        dependency "leftpad"
+    }
+    webpackBundle {
+        bundleName = "main"
+        contentPath = file('src/main/web')
+        mode = 'development'
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlinx:kotlinx-html-js:${kotlinx_html_version}"
+}
+
+task dukat(type: Exec) {
+    commandLine "dukat", "-d", "./src/main/kotlin/dayjs", "./build/node_modules/dayjs/index.d.ts"
+}
