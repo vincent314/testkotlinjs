@@ -1,2 +1,3 @@
 rootProject.name = 'testkotlinjs'
+include 'libjs','webjs'
 
